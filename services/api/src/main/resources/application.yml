@@ -1,0 +1,37 @@
+micronaut:
+  application:
+    name: budget-scope-api
+  server:
+    port: ${PORT:8080}
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+
+endpoints:
+  health:
+    enabled: true
+    sensitive: false
+    details-visible: ANONYMOUS
+
+datasources:
+  default:
+    url: ${DB_URL:`jdbc:postgresql://localhost:5432/budget_scope`}
+    username: ${DB_USERNAME:budget_scope}
+    password: ${DB_PASSWORD:budget_scope}
+    driver-class-name: org.postgresql.Driver
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+
+security:
+  enabled: true
+  token:
+    jwt:
+      signatures:
+        jwks:
+          oidc:
+            url: ${OIDC_JWKS_URL:`https://issuer.example.com/.well-known/jwks.json`}
