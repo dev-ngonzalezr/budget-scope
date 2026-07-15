@@ -6,10 +6,6 @@ plugins {
 version = "0.1.0-SNAPSHOT"
 group = "com.budgetscope"
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
     annotationProcessor("io.micronaut.openapi:micronaut-openapi")
@@ -26,6 +22,8 @@ dependencies {
     implementation("io.swagger.core.v3:swagger-annotations")
 
     runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
+    runtimeOnly("org.yaml:snakeyaml")
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("io.micronaut:micronaut-http-client")
@@ -45,6 +43,7 @@ java {
 }
 
 micronaut {
+    version.set("5.0.2")
     runtime("netty")
     testRuntime("junit5")
     processing {

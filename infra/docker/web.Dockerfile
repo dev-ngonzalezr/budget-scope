@@ -7,4 +7,4 @@ RUN pnpm install
 
 COPY apps/web ./
 EXPOSE 3000
-CMD ["pnpm", "dev", "--", "--hostname", "0.0.0.0"]
+CMD ["pnpm", "dev", "--hostname", "0.0.0.0"]
