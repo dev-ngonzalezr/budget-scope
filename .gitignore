@@ -1,6 +1,7 @@
 # Gradle caches and build output
 .gradle/
 **/build/
+services/api/bin/
 
 # Node.js dependencies and package-manager caches
 **/node_modules/
@@ -9,4 +10,3 @@
 # Next.js and test output
 **/.next/
 **/coverage/
-

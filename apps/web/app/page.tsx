@@ -1,3 +1,5 @@
+import { ApiHealthIndicator } from "./ApiHealthIndicator";
+
 const features = [
   "Track recurring payments",
   "Understand monthly cash flow",
@@ -7,6 +9,7 @@ const features = [
 export default function HomePage() {
   return (
     <main className="shell">
+      <ApiHealthIndicator />
       <section className="hero" aria-labelledby="page-title">
         <p className="eyebrow">BudgetScope</p>
         <h1 id="page-title">Financial clarity for households.</h1>

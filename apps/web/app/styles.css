@@ -16,6 +16,45 @@ body {
   padding: 2rem;
 }
 
+.api-health {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d8e1ea;
+  border-radius: 999px;
+  color: #526579;
+  display: flex;
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 0.45rem;
+  padding: 0.5rem 0.75rem;
+  position: fixed;
+  right: 1.25rem;
+  top: 1.25rem;
+}
+
+.api-health__dot {
+  background: #94a3b8;
+  border-radius: 50%;
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+.api-health--healthy {
+  color: #166534;
+}
+
+.api-health--healthy .api-health__dot {
+  background: #22c55e;
+}
+
+.api-health--unavailable {
+  color: #991b1b;
+}
+
+.api-health--unavailable .api-health__dot {
+  background: #ef4444;
+}
+
 .hero {
   background: #ffffff;
   border: 1px solid #d8e1ea;
