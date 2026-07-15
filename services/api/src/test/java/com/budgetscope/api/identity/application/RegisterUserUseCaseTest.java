@@ -2,26 +2,28 @@ package com.budgetscope.api.identity.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.budgetscope.api.identity.domain.AvatarImage;
 import com.budgetscope.api.identity.domain.EmailAddress;
 import com.budgetscope.api.identity.domain.User;
 import com.budgetscope.api.identity.domain.UserId;
-import com.budgetscope.api.workspace.domain.Workspace;
-import com.budgetscope.api.workspace.domain.WorkspaceId;
-import com.budgetscope.api.workspace.domain.WorkspaceName;
+import com.budgetscope.api.identity.domain.UserName;
+import com.budgetscope.api.shared.application.InternalEvent;
+import com.budgetscope.api.shared.application.InternalEventBus;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 final class RegisterUserUseCaseTest {
     @Test
-    void registersUserAndProvisionsDefaultWorkspace() {
+    void registersUserAndPublishesRegistrationEvent() {
         var users = new InMemoryUserRepository();
-        var workspaces = new RecordingWorkspaceProvisioningPort();
-        var useCase = new RegisterUserUseCase(users, workspaces);
+        var events = new RecordingInternalEventBus();
+        var useCase = new RegisterUserUseCase(users, events);
 
         var result = useCase.register(RegisterUserCommand.withoutAvatar("OWNER@Example.com", " Owner "));
 
@@ -29,14 +31,14 @@ final class RegisterUserUseCaseTest {
         assertEquals("Owner", result.user().name().value());
         assertFalse(result.user().avatarImage().isPresent());
         assertSame(result.user(), users.savedUser);
-        assertEquals(result.user().id(), workspaces.provisionedOwnerId);
-        assertEquals("default", result.defaultWorkspace().name().value());
-        assertEquals(result.user().id(), result.defaultWorkspace().ownerId());
+        var event = assertInstanceOf(UserRegisteredEvent.class, events.publishedEvent);
+        assertEquals(result.user().id(), event.userId());
+        assertEquals(result.user().email(), event.email());
     }
 
     @Test
     void registersUserWithAvatarReference() {
-        var useCase = new RegisterUserUseCase(new InMemoryUserRepository(), new RecordingWorkspaceProvisioningPort());
+        var useCase = new RegisterUserUseCase(new InMemoryUserRepository(), new RecordingInternalEventBus());
         var avatar = new AvatarImage("avatars/user-1.png", "image/png");
 
         var result = useCase.register(new RegisterUserCommand("owner@example.com", "Owner", avatar));
@@ -45,11 +47,11 @@ final class RegisterUserUseCaseTest {
     }
 
     @Test
-    void rejectsDuplicateEmailBeforeProvisioningWorkspace() {
+    void rejectsDuplicateEmailBeforePublishingRegistrationEvent() {
         var users = new InMemoryUserRepository();
         users.existingEmail = new EmailAddress("owner@example.com");
-        var workspaces = new RecordingWorkspaceProvisioningPort();
-        var useCase = new RegisterUserUseCase(users, workspaces);
+        var events = new RecordingInternalEventBus();
+        var useCase = new RegisterUserUseCase(users, events);
 
         var error = assertThrows(
                 DuplicateUserEmailException.class,
@@ -57,18 +59,35 @@ final class RegisterUserUseCaseTest {
 
         assertEquals("owner@example.com", error.email().value());
         assertEquals(0, users.saveCount);
-        assertEquals(0, workspaces.provisionCount);
+        assertEquals(0, events.publishCount);
     }
 
     @Test
     void surfacesRepositoryDuplicateEmailAsApplicationError() {
         var users = new InMemoryUserRepository();
         users.failOnSave = true;
-        var useCase = new RegisterUserUseCase(users, new RecordingWorkspaceProvisioningPort());
+        var events = new RecordingInternalEventBus();
+        var useCase = new RegisterUserUseCase(users, events);
 
         assertThrows(
                 DuplicateUserEmailException.class,
                 () -> useCase.register(RegisterUserCommand.withoutAvatar("owner@example.com", "Owner")));
+        assertEquals(0, events.publishCount);
+    }
+
+    @Test
+    void requiresCollaborators() {
+        var users = new InMemoryUserRepository();
+        var events = new RecordingInternalEventBus();
+
+        assertThrows(NullPointerException.class, () -> new RegisterUserUseCase(null, events));
+        assertThrows(NullPointerException.class, () -> new RegisterUserUseCase(users, null));
+        assertThrows(NullPointerException.class, () -> new UserRegisteredEvent(null, new EmailAddress("owner@example.com")));
+        assertThrows(NullPointerException.class, () -> new UserRegisteredEvent(users.save(User.create(
+                UserId.newId(),
+                new EmailAddress("owner@example.com"),
+                new UserName("Owner"))).id(), null));
+        assertTrue(RegisterUserCommand.withoutAvatar("owner@example.com", "Owner").avatarImageReference().isEmpty());
     }
 
     private static final class InMemoryUserRepository implements UserRepository {
@@ -95,15 +114,14 @@ final class RegisterUserUseCaseTest {
         }
     }
 
-    private static final class RecordingWorkspaceProvisioningPort implements WorkspaceProvisioningPort {
-        private UserId provisionedOwnerId;
-        private int provisionCount;
+    private static final class RecordingInternalEventBus implements InternalEventBus {
+        private InternalEvent publishedEvent;
+        private int publishCount;
 
         @Override
-        public Workspace createDefaultWorkspaceFor(UserId ownerId) {
-            provisionCount++;
-            provisionedOwnerId = ownerId;
-            return Workspace.create(WorkspaceId.newId(), new WorkspaceName("default"), ownerId);
+        public void publish(InternalEvent event) {
+            publishCount++;
+            publishedEvent = event;
         }
     }
 }
