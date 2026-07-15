@@ -2,10 +2,8 @@ package com.budgetscope.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 
-@MicronautTest(startApplication = false)
 final class HealthControllerTest {
     @Test
     void statusReturnsServiceHealth() {
