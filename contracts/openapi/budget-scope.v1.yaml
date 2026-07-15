@@ -1,0 +1,30 @@
+openapi: 3.1.0
+info:
+  title: BudgetScope API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080/api/v1
+paths:
+  /status:
+    get:
+      summary: Read API status
+      operationId: getStatus
+      responses:
+        '200':
+          description: API status response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+components:
+  schemas:
+    StatusResponse:
+      type: object
+      required:
+        - status
+        - service
+      properties:
+        status:
+          type: string
+        service:
+          type: string
