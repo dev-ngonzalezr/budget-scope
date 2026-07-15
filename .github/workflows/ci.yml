@@ -23,17 +23,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Setup Node first
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
 
-      # Then install pnpm
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      # Ensure pnpm is available (Corepack + activate pnpm v9)
+      - name: Enable Corepack and activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
+
+      - name: Check pnpm
+        run: pnpm --version
 
       - run: pnpm install
       - run: pnpm typecheck
