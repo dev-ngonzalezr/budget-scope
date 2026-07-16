@@ -4,20 +4,19 @@ import com.budgetscope.api.identity.domain.EmailAddress;
 import com.budgetscope.api.identity.domain.User;
 import com.budgetscope.api.identity.domain.UserId;
 import com.budgetscope.api.identity.domain.UserName;
-import com.budgetscope.api.shared.application.SynchronousInternalEventBus;
+import com.budgetscope.api.shared.application.AsynchronousInternalEventBus;
 import java.util.Objects;
 
 /**
- * Application workflow for registering a user and publishing the registration event through the synchronous
- * internal event bus. Infrastructure adapters should execute {@link #register(RegisterUserCommand)} and
- * synchronous handlers inside a single transaction so user persistence and default workspace provisioning
- * commit or roll back together.
+ * Application workflow for registering a user and publishing the registration event through the asynchronous
+ * internal event bus. Infrastructure adapters can publish after commit so downstream modules subscribe
+ * without coupling registration to their work.
  */
 public final class RegisterUserUseCase {
     private final UserRepository userRepository;
-    private final SynchronousInternalEventBus internalEventBus;
+    private final AsynchronousInternalEventBus internalEventBus;
 
-    public RegisterUserUseCase(UserRepository userRepository, SynchronousInternalEventBus internalEventBus) {
+    public RegisterUserUseCase(UserRepository userRepository, AsynchronousInternalEventBus internalEventBus) {
         this.userRepository = Objects.requireNonNull(userRepository, "User repository is required");
         this.internalEventBus = Objects.requireNonNull(internalEventBus, "Internal event bus is required");
     }

@@ -1,27 +1,29 @@
 package com.budgetscope.api.workspace.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.budgetscope.api.identity.application.UserRegisteredEvent;
 import com.budgetscope.api.identity.domain.EmailAddress;
 import com.budgetscope.api.identity.domain.UserId;
+import com.budgetscope.api.shared.infrastructure.InMemoryAsynchronousInternalEventBus;
 import com.budgetscope.api.workspace.domain.Workspace;
 import org.junit.jupiter.api.Test;
 
 final class CreateDefaultWorkspaceOnUserRegisteredTest {
     @Test
-    void createsDefaultWorkspaceForRegisteredUserEvent() {
+    void subscribesToRegisteredUserEventAndCreatesDefaultWorkspace() {
         var repository = new RecordingWorkspaceRepository();
         var handler = new CreateDefaultWorkspaceOnUserRegistered(repository);
+        var events = new InMemoryAsynchronousInternalEventBus(Runnable::run);
         var userId = UserId.newId();
 
-        var workspace = handler.handle(new UserRegisteredEvent(userId, new EmailAddress("owner@example.com")));
+        events.subscribe(handler);
+        events.publish(new UserRegisteredEvent(userId, new EmailAddress("owner@example.com")));
 
-        assertSame(workspace, repository.savedWorkspace);
-        assertEquals(userId, workspace.ownerId());
-        assertEquals("default", workspace.name().value());
+        assertEquals(UserRegisteredEvent.class, handler.eventType());
+        assertEquals(userId, repository.savedWorkspace.ownerId());
+        assertEquals("default", repository.savedWorkspace.name().value());
     }
 
     @Test

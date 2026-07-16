@@ -13,7 +13,7 @@ import com.budgetscope.api.identity.domain.User;
 import com.budgetscope.api.identity.domain.UserId;
 import com.budgetscope.api.identity.domain.UserName;
 import com.budgetscope.api.shared.application.InternalEvent;
-import com.budgetscope.api.shared.application.SynchronousInternalEventBus;
+import com.budgetscope.api.shared.application.AsynchronousInternalEventBus;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -114,7 +114,7 @@ final class RegisterUserUseCaseTest {
         }
     }
 
-    private static final class RecordingInternalEventBus implements SynchronousInternalEventBus {
+    private static final class RecordingInternalEventBus implements AsynchronousInternalEventBus {
         private InternalEvent publishedEvent;
         private int publishCount;
 
