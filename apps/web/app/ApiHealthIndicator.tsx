@@ -27,7 +27,12 @@ export function ApiHealthIndicator() {
     return () => window.clearInterval(interval);
   }, []);
 
-  const label = health === "healthy" ? "API healthy" : health === "checking" ? "Checking API" : "API unavailable";
+  const label =
+    health === "healthy"
+      ? "API healthy"
+      : health === "checking"
+        ? "Checking API"
+        : "API unavailable";
 
   return (
     <div className={`api-health api-health--${health}`} role="status" aria-live="polite">

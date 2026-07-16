@@ -10,3 +10,6 @@ services/api/bin/
 # Next.js and test output
 **/.next/
 **/coverage/
+
+# TypeScript incremental cache
+**/*.tsbuildinfo

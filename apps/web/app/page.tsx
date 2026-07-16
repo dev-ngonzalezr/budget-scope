@@ -14,7 +14,8 @@ export default function HomePage() {
         <p className="eyebrow">BudgetScope</p>
         <h1 id="page-title">Financial clarity for households.</h1>
         <p className="lede">
-          A privacy-minded dashboard for monthly commitments, spending, budgets, and explainable savings insights.
+          A privacy-minded dashboard for monthly commitments, spending, budgets, and explainable
+          savings insights.
         </p>
         <ul className="feature-list" aria-label="Initial capabilities">
           {features.map((feature) => (
