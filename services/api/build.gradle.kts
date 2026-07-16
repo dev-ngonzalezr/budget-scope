@@ -1,6 +1,9 @@
 plugins {
     id("io.micronaut.application")
     id("io.micronaut.aot")
+    id("com.diffplug.spotless")
+    checkstyle
+    pmd
 }
 
 version = "0.1.0-SNAPSHOT"
@@ -40,6 +43,51 @@ application {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))
+    }
+}
+
+checkstyle {
+    toolVersion = "10.21.1"
+    configFile = file("checkstyle.xml")
+}
+
+pmd {
+    toolVersion = "7.8.0"
+    ruleSetFiles = files("config/pmd/ruleset.xml")
+    ruleSets = emptyList()
+}
+
+spotless {
+    java {
+        target("src/**/*.java")
+        googleJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    kotlinGradle {
+        target("*.gradle.kts")
+        ktlint()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+tasks.named("check") {
+    dependsOn("spotlessCheck")
+}
+
+tasks.withType<Checkstyle>().configureEach {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.withType<Pmd>().configureEach {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
     }
 }
 
